@@ -7,12 +7,12 @@ import { useSelector } from "react-redux";
 
 const Login = () => {
   // Destructuring the user from the store
-  // const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
 
   // UseEffect hook to fetch the user details and navigate to dashboard
-  // useEffect(() => {
-  //   user && navigate("/dashboard");
-  // }, [user]);
+  useEffect(() => {
+    user && navigate("/dashboard");
+  }, [user]);
 
   // Destructuring props from react hook form
   const {
