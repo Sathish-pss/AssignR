@@ -102,7 +102,9 @@ const Sidebar = () => {
         <p className="bg-blue-600 p-2 rounded-full">
           <MdOutlineAddTask className="text-white text-2xl font-black" />
         </p>
-        <span className="text-2xl font-bold text-black">TaskMe</span>
+        <span className="text-2xl font-bold text-black">
+          Assign<span className="text-red-500">R</span>
+        </span>
       </h1>
 
       <div className="flex-1 flex flex-col gap-y-5 py-8">
