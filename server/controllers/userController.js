@@ -242,9 +242,9 @@ export const markNotificationRead = async (req, res) => {
       );
     }
     res.status(201).json({
-      status: true,
-      message: "Done",
-    });
+        status: true,
+        message: "Done"
+    })
   } catch (error) {
     console.log(error);
     res.status(400).json({
