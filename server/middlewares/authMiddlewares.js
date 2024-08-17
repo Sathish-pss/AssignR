@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
 /**
- * Function to check whether the route is a protected routes
+ * Middleware Function to check whether the route is a protected routes
  * Routes can be accessed, only in sign
  */
 const protectRoute = async (req, res, next) => {
@@ -36,7 +36,7 @@ const protectRoute = async (req, res, next) => {
 };
 
 /**
- * Function to check the whether the routes is a Admin routes
+ * Middleware Function to check the whether the routes is a Admin routes
  */
 const isAdminRoute = (req, res, next) => {
   if (req.user && req.user.isAdmin) {
@@ -48,3 +48,5 @@ const isAdminRoute = (req, res, next) => {
     });
   }
 };
+
+export { isAdminRoute, protectRoute };
