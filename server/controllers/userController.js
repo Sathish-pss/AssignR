@@ -242,12 +242,103 @@ export const markNotificationRead = async (req, res) => {
       );
     }
     res.status(201).json({
-        status: true,
-        message: "Done"
-    })
+      status: true,
+      message: "Done",
+    });
   } catch (error) {
     console.log(error);
     res.status(400).json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * @returns Controller function to change the password
+ */
+export const changeUserPassword = async (req, res) => {
+  // Since it is a protected route, always getting the user id
+  try {
+    const { userId } = req.user;
+
+    // Finding the user by id
+    const user = await User.findById(userId);
+
+    // If the user exists just update the password
+    if (user) {
+      user.password = req.body.password;
+      await user.save();
+      user.password = undefined;
+
+      res.status(201).json({
+        status: true,
+        message: "Password Changed Successfully",
+      });
+    } else {
+      res.status(404).json({
+        status: false,
+        message: "User not found",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * @returns Controller function to Activate User profile
+ */
+export const activateUserProfile = async (req, res) => {
+  try {
+    // Fetching the id from the query params
+    const { id } = req.params;
+
+    // Finding the user by id
+    const user = await User.findById(id);
+
+    if (user) {
+      user.isActive = req.body.isActive; // setting the isActive to true
+      await user.save();
+
+      res.status(201).json({
+        status: true,
+        message: `User account has been ${
+          user.isActive ? "activated" : "disabled"
+        }`,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({
+      status: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * @returns Controller function to delete the user - Admin only function
+ */
+export const deleteUserProfile = async (req, res) => {
+  try {
+    // Getting the user from the params
+    const { id } = req.params;
+
+    // Finding the user by id and deleting
+    await User.findByIdAndDelete(id);
+
+    res.status(200).json({
+      status: true,
+      message: "User deleted Successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({
       status: false,
       message: error.message,
     });
