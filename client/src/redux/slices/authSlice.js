@@ -1,14 +1,19 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { user } from "../../assets/data";
 
+/**
+ * Setting the initial states of User
+ */
 const initialState = {
   user: localStorage.getItem("userInfo")
     ? JSON.parse(localStorage.getItem("userInfo"))
-    : user,
+    : null,
 
   isSidebarOpen: false,
 };
 
+/**
+ * @returns Authslice
+ */
 const authSlice = createSlice({
   name: "auth",
   initialState,

@@ -3,7 +3,10 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import Textbox from "../components/Textbox";
 import Button from "../components/Button";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useLoginMutation } from "../redux/slices/api/authApiSlice";
+import { toast } from "sonner";
+import { setCredentials } from "../redux/slices/authSlice";
 
 const Login = () => {
   // Destructuring the user from the store
@@ -23,10 +26,23 @@ const Login = () => {
 
   // Assigning use navigate hook to a variable
   const navigate = useNavigate();
+  // Assigning dispatch hook to a variable
+  const dispatch = useDispatch();
+
+  // Destructuring the Login Mutation from the Redux api slices => Login && Is Loading
+  const [login, { isLoading }] = useLoginMutation();
 
   // Function to submit the Login Form
   const submitHandler = async (data) => {
-    console.log("submit");
+    try {
+      const result = await login(data);
+      dispatch(setCredentials(result));
+      navigate("/");
+      console.log(result);
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.data?.message || error.message);
+    }
   };
 
   return (

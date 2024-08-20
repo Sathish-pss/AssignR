@@ -34,7 +34,7 @@ export const registerUser = async (req, res) => {
     if (user) {
       isAdmin ? createJWT(res, user._id) : null;
       user.password = undefined;
-      res.status(201).json(user);
+      res.status(200).json(user);
     } else {
       return res.status(400).json({
         status: false,
@@ -70,7 +70,7 @@ export const loginUser = async (req, res) => {
     }
 
     // If the user is inactive, Sends the response with user account deactivated
-    if (user?.isActive) {
+    if (!user?.isActive) {
       return res.status(400).json({
         status: false,
         message: "User account has been deactivated, contact the admin",
@@ -78,7 +78,7 @@ export const loginUser = async (req, res) => {
     }
 
     // If the credentials are correct, verify the password
-    const isMatch = await user.matchPassword(password);
+    const isMatch = await User.matchPassword(password);
 
     // If the user and the password is matched
     if (user && isMatch) {

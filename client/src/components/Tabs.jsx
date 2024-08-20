@@ -5,8 +5,8 @@ function classNames(...classes) {
 }
 
 /**
- * 
- * @param {*} param0 
+ *
+ * @param {*} param0
  * @returns Reusable functional component for the Tab
  */
 export default function Tabs({ tabs, setSelected, children }) {
