@@ -5,8 +5,9 @@ import Textbox from "../components/Textbox";
 import Button from "../components/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { useLoginMutation } from "../redux/slices/api/authApiSlice";
-import { toast } from "sonner";
 import { setCredentials } from "../redux/slices/authSlice";
+import Loading from "../components/Loader";
+import { toast } from "react-toastify";
 
 const Login = () => {
   // Destructuring the user from the store
@@ -36,12 +37,17 @@ const Login = () => {
   const submitHandler = async (data) => {
     try {
       const result = await login(data);
-      dispatch(setCredentials(result));
-      navigate("/");
-      console.log(result);
+      if (result?.data?.status) {
+        dispatch(setCredentials(result));
+        toast.success("Login Successful");
+        navigate("/");
+        console.log("Logged Values", result);
+      } else {
+        toast.error(result?.error?.data?.message);
+      }
     } catch (error) {
       console.log(error);
-      toast.error(error?.data?.message || error.message);
+      toast.error("Error login, try again!");
     }
   };
 
@@ -112,11 +118,15 @@ const Login = () => {
               </span>
 
               {/* Button to submit the login form */}
-              <Button
-                type="submit"
-                label="Submit"
-                className="w-full h-10 bg-blue-700 text-white rounded-full"
-              />
+              {isLoading ? (
+                <Loading />
+              ) : (
+                <Button
+                  type="submit"
+                  label="Submit"
+                  className="w-full h-10 bg-blue-700 text-white rounded-full"
+                />
+              )}
             </div>
           </form>
         </div>

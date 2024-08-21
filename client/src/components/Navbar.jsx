@@ -39,8 +39,10 @@ const Navbar = () => {
 
       {/* Rendering the NotificationPanel Component here for notifications  */}
       <div className="flex gap-2 items-center">
+        {/* Notifications Panel Component */}
         <NotificationPanel />
 
+        {/* Rendering the user avatar component here */}
         <UserAvatar />
       </div>
     </div>

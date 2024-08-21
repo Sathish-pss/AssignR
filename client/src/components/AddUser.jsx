@@ -6,6 +6,8 @@ import { DialogTitle } from "@headlessui/react";
 import Textbox from "./Textbox";
 import Loading from "./Loader";
 import Button from "./Button";
+import { useRegisterMutation } from "../redux/slices/api/authApiSlice";
+import { toast } from "react-toastify";
 
 /**
  *
@@ -19,8 +21,7 @@ const AddUser = ({ open, setOpen, userData }) => {
   const { user } = useSelector((state) => state.auth);
 
   // Setting loading states
-  const isLoading = false,
-    isUpdating = false;
+  const isUpdating = false;
 
   // React hook form props here
   const {
@@ -29,10 +30,28 @@ const AddUser = ({ open, setOpen, userData }) => {
     formState: { errors },
   } = useForm({ defaultValues });
 
+  // Destructuring new user function from useMutations in Redux
+  const [addNewUser, { isLoading }] = useRegisterMutation();
   /**
    * Function to submit the user details
    */
-  const handleOnSubmit = () => {};
+  const handleOnSubmit = async (data) => {
+    try {
+      if (userData) {
+      } else {
+        const result = await addNewUser({
+          ...data,
+          password: data.email,
+        }).unwrap();
+        toast.success("New user added successfully");
+        setTimeout(() => {
+          setOpen(false);
+        }, [1000]);
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+  };
 
   return (
     <>

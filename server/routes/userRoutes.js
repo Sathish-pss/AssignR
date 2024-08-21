@@ -21,7 +21,7 @@ const router = express.Router();
 // User Registrations and Auth routes
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.post("logout", logoutUser);
+router.post("/logout", logoutUser);
 
 // Routes to get the Team details
 router.get("/get-team", protectRoute, isAdminRoute, getTeamList);

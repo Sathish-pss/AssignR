@@ -28,7 +28,7 @@ const ICONS = {
  * @returns Functional component returns the Task card
  */
 const TaskCard = ({ task }) => {
-    // Destructuring the user from the redux
+  // Destructuring the user from the redux
   const { user } = useSelector((state) => state.auth);
   // State to open the dialog
   const [open, setOpen] = useState(false);

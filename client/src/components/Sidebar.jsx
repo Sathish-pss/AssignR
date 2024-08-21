@@ -68,8 +68,10 @@ const Sidebar = () => {
   // defining the path here
   const path = location.pathname.split("/")[1];
 
-  // Rendering the sidebar links based on role
-  const sidebarLinks = user?.isAdmin ? linkData : linkData.slice(0, 5);
+  // If the logged user is a Admin, Full side bar options are available, For users only the first 5 menus
+  const sidebarLinks = user?.data?.data?.isAdmin
+    ? linkData
+    : linkData.slice(0, 5);
 
   // Function to close the sidebar
   const closeSidebar = () => {

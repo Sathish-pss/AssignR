@@ -11,19 +11,36 @@ import { IoLogOutOutline } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { getInitials } from "../utils";
+import { useLogoutMutation } from "../redux/slices/api/authApiSlice";
+import { toast } from "react-toastify";
+import { logout } from "../redux/slices/authSlice";
 
 const UserAvatar = () => {
-  const [open, setOpen] = useState(false);
-  const [openPassword, setOpenPassword] = useState(false);
+  const [open, setOpen] = useState(false); // State to set the menu bar open
+  const [openPassword, setOpenPassword] = useState(false); // State to open the password
   const { user } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const dispatch = useDispatch(); // Dispatch hook
+  const navigate = useNavigate(); // Navigate hook
+
+  // Invoking the logout functionality here
+  const [logoutUser] = useLogoutMutation();
 
   /**
    * Functinon to logout of the session
    */
-  const logoutHandler = () => {
-    console.log("logout");
+  const logoutHandler = async () => {
+    try {
+      // Calling the api here
+      await logoutUser().unwrap();
+      // Dispatching the logout functionality here from redux
+      dispatch(logout());
+      // Navigating back to the login page
+      navigate("/log-in");
+      // Toast message
+      toast.info("Logged out successfully");
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
   };
 
   return (
@@ -32,8 +49,9 @@ const UserAvatar = () => {
         <Menu as="div" className="relative inline-block text-left">
           <div>
             <MenuButton className="w-10 h-10 2xl:w-12 2xl:h-12 items-center justify-center rounded-full bg-blue-600">
+              {/* Rendering the name with initial */}
               <span className="text-white font-semibold">
-                {getInitials(user?.name)}
+                {getInitials(user?.data?.data?.name)}
               </span>
             </MenuButton>
           </div>

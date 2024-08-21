@@ -78,19 +78,24 @@ export const loginUser = async (req, res) => {
     }
 
     // If the credentials are correct, verify the password
-    const isMatch = await User.matchPassword(password);
+    const isMatch = await user.matchPassword(password);
 
-    // If the user and the password is matched
+    // If the user and the password is matched, Creating the token for the user
     if (user && isMatch) {
       createJWT(res, user._id);
       user.password = undefined;
-      res.status(200).json(user);
+      res.status(200).json({
+        status: true,
+        message: "Login Successful",
+        data: user,
+      });
     } else {
       return res.status(401).json({
         status: false,
         message: "Invalid email or password",
       });
     }
+    // Else returning the error message with a status code
   } catch (error) {
     console.log(error);
     return res.status(400).json({
