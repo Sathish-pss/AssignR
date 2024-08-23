@@ -7,12 +7,17 @@ import { getInitials } from "../utils";
 import clsx from "clsx";
 import ConfirmatioDialog, { UserAction } from "../components/Dialogs";
 import AddUser from "../components/AddUser";
+import { useGetTeamListQuery } from "../redux/slices/api/userApiSlice";
 
 const Users = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [open, setOpen] = useState(false);
   const [openAction, setOpenAction] = useState(false);
   const [selected, setSelected] = useState(null);
+
+  //Destructuring the users list from the redux GET Team list mutations
+  const { data, error, isLoading } = useGetTeamListQuery();
+  console.log("GET TEAM DTA", data);
 
   // Function to action handler for forms
   const userActionHandler = () => {};

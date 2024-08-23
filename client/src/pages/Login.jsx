@@ -41,7 +41,6 @@ const Login = () => {
         dispatch(setCredentials(result));
         toast.success("Login Successful");
         navigate("/");
-        console.log("Logged Values", result);
       } else {
         toast.error(result?.error?.data?.message);
       }

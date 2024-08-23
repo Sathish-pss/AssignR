@@ -1,6 +1,6 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import ModalWrapper from "./ModalWrapper";
 import { DialogTitle } from "@headlessui/react";
 import Textbox from "./Textbox";
@@ -8,6 +8,8 @@ import Loading from "./Loader";
 import Button from "./Button";
 import { useRegisterMutation } from "../redux/slices/api/authApiSlice";
 import { toast } from "react-toastify";
+import { useUpdateUserMutation } from "../redux/slices/api/userApiSlice";
+import { setCredentials } from "../redux/slices/authSlice";
 
 /**
  *
@@ -20,9 +22,6 @@ const AddUser = ({ open, setOpen, userData }) => {
   // Destructuring the user details from the redux
   const { user } = useSelector((state) => state.auth);
 
-  // Setting loading states
-  const isUpdating = false;
-
   // React hook form props here
   const {
     register,
@@ -30,15 +29,28 @@ const AddUser = ({ open, setOpen, userData }) => {
     formState: { errors },
   } = useForm({ defaultValues });
 
+  // Assigning variable to the useDispatch hook
+  const dispatch = useDispatch();
   // Destructuring new user function from useMutations in Redux
   const [addNewUser, { isLoading }] = useRegisterMutation();
+  // Destructuring update user funciton from UseMutations in Redux
+  const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
   /**
-   * Function to submit the user details
+   * Function to Add a new user
    */
   const handleOnSubmit = async (data) => {
     try {
+      // If the user data exists we are updating
       if (userData) {
-      } else {
+        const result = await updateUser(data).unwrap();
+        toast.success(result?.message);
+        // If the userid equals existing id, setting the new state
+        if (userData?._id === user?._id) {
+          dispatch(setCredentials(...result?.user));
+        }
+      }
+      // Else we are creating a new user
+      else {
         const result = await addNewUser({
           ...data,
           password: data.email,
