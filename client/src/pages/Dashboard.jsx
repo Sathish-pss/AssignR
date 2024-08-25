@@ -14,6 +14,8 @@ import clsx from "clsx";
 import { Chart } from "../components/Chart";
 import { BGS, PRIOTITYSTYELS, TASK_TYPE, getInitials } from "../utils";
 import UserInfo from "../components/UserInfo";
+import { useGetDashboardStatsQuery } from "../redux/slices/api/taskApiSlice";
+import Loader from "../components/Loader";
 
 /**
  *
@@ -161,6 +163,19 @@ const UserTable = ({ users }) => {
  */
 const Dashboard = () => {
   const totals = summary.tasks;
+
+  // Destructuring the data from the redux task API
+  const { data, isLoading, error } = useGetDashboardStatsQuery();
+
+  // Show a loader if data is rendering
+  if (isLoading)
+    return (
+      <div className="py-10">
+        <Loader />
+      </div>
+    );
+
+  console.log("Dashboard data", data);
 
   const stats = [
     {

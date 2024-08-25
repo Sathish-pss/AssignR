@@ -12,6 +12,7 @@ import BoardView from "../components/BoardView";
 import { tasks } from "../assets/data";
 import Table from "../components/task/Table";
 import AddTask from "../components/task/AddTask";
+import { useGetAllTaskQuery } from "../redux/slices/api/taskApiSlice";
 
 const TABS = [
   { title: "Board View", icon: <MdGridView /> },
@@ -33,14 +34,21 @@ const Tasks = () => {
   // Assigning params to useParams hook
   const params = useParams();
 
-  const [selected, setSelected] = useState(0);
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [selected, setSelected] = useState(0); // State to selected tab
+  const [open, setOpen] = useState(false); // state to open the user details menu popup
 
   // Variable stores the status
   const status = params?.status || "";
 
-  return loading ? (
+  // Destructuring the data from the redux task api and sending the query params
+  const { data, isLoading } = useGetAllTaskQuery({
+    strQuery: status,
+    isTrashed: "",
+    search: "",
+  });
+
+  // Returning the loader component while data is loaded
+  return isLoading ? (
     <div className="py-10">
       <Loading />
     </div>
