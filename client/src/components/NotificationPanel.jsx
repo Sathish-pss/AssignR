@@ -10,6 +10,11 @@ import { BiSolidMessageRounded } from "react-icons/bi";
 import { HiBellAlert } from "react-icons/hi2";
 import { IoIosNotificationsOutline } from "react-icons/io";
 import { Link } from "react-router-dom";
+import ViewNotification from "./ViewNotification";
+import {
+  useGetNotificationsQuery,
+  useMarkNotiasReadMutation,
+} from "../redux/slices/api/userApiSlice";
 
 // Dummy json data for the alerts
 const data = [
@@ -58,16 +63,36 @@ const ICONS = {
   ),
 };
 
+/**
+ *
+ * @returns Functional Component returns the Notificationa panel Component
+ */
 const NotificationPanel = () => {
-  const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState(null);
+  const [open, setOpen] = useState(false); // State to open the Dialog
+  const [selected, setSelected] = useState(null); // State to set the Id
 
-  //  const { data, refetch } = useGetNotificationsQuery();
-  //  const [markAsRead] = useMarkNotiAsReadMutation();
+  //Destructuring the Mutations from the Redux Api
+  const { data, refetch } = useGetNotificationsQuery();
+  const [markAsRead] = useMarkNotiasReadMutation();
 
-  const readHandler = () => {};
-  const viewHandler = () => {};
+  /**
+   * Function to Read the notifications
+   */
+  const readHandler = async () => {
+    await markAsRead({ type, id }).unwrap();
+    await refetch();
+  };
 
+  /**
+   * Function to view the notifications and Mark individual One read
+   */
+  const viewHandler = async (el) => {
+    setSelected(el);
+    readHandler("one", el?._id);
+    setOpen(true);
+  };
+
+  // Method to handle Read All the notifications
   const callsToAction = [
     { name: "Cancel", href: "#", icon: "" },
     {
@@ -152,6 +177,9 @@ const NotificationPanel = () => {
           </PopoverPanel>
         </Transition>
       </Popover>
+
+      {/* Rendering the View Notifications Panel here */}
+      <ViewNotification open={open} setOpen={setOpen} el={selected} />
     </>
   );
 };

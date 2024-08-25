@@ -7,24 +7,28 @@ import User from "../models/user.js";
  */
 const protectRoute = async (req, res, next) => {
   try {
+    /**
+     * Retrieving the token from the cookies
+     */
     let token = req.cookies?.token;
-    console.log("Decoded Token====> ", token);
+
+    //If the token exists, Verifying the token with secret key
     if (token) {
       const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
-      const resp = await User.findById(decodedToken.userId).select(
+      // Finding the details by user id
+      const resp = await User.findById(decodedToken?.USERiD).select(
         "isAdmin email"
       );
 
-      console.log("Middleware response", resp);
-
       req.user = {
-        email: resp.email,
-        isAdmin: resp.isAdmin,
-        userId: decodedToken.userId,
+        email: resp?.email,
+        isAdmin: resp?.isAdmin,
+        userId: decodedToken?.USERiD,
       };
       next();
     } else {
+      // Else returning as not authorized endpoint
       return res.status(401).json({
         status: false,
         message: "Not authorized. Try login again",

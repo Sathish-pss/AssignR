@@ -2,28 +2,70 @@ import React, { useState } from "react";
 import Title from "../components/Title";
 import Button from "../components/Button";
 import { IoMdAdd } from "react-icons/io";
-import { summary } from "../assets/data";
 import { getInitials } from "../utils";
 import clsx from "clsx";
+import { toast } from "react-toastify";
 import ConfirmatioDialog, { UserAction } from "../components/Dialogs";
 import AddUser from "../components/AddUser";
-import { useGetTeamListQuery } from "../redux/slices/api/userApiSlice";
+// Importing the mutations here
+import {
+  useGetTeamListQuery,
+  useDeteteUserMutation,
+  useUserActionMutation,
+  useUpdateUserMutation,
+} from "../redux/slices/api/userApiSlice";
 
+/**
+ * Functional Component returns the Users list of the Application
+ */
 const Users = () => {
-  const [openDialog, setOpenDialog] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false); // State to open the Add Users dialog open
   const [open, setOpen] = useState(false);
-  const [openAction, setOpenAction] = useState(false);
-  const [selected, setSelected] = useState(null);
+  const [openAction, setOpenAction] = useState(false); // State to open the Action dialog box open
+  const [selected, setSelected] = useState(null); // State to set the edit id
 
   //Destructuring the users list from the redux GET Team list mutations
-  const { data, error, isLoading } = useGetTeamListQuery();
-  console.log("GET TEAM DTA", data);
+  const { data, error, isLoading, refetch } = useGetTeamListQuery();
+  // Destructuring the delete user from DELETE User mutation
+  const [deleteUser] = useDeteteUserMutation();
+  // Destructuring the update user from UPDATE user mutation
+  const [userAction] = useUserActionMutation();
 
   // Function to action handler for forms
-  const userActionHandler = () => {};
+  const userActionHandler = async () => {
+    try {
+      const result = await userAction({
+        isActive: !selected?.isActive,
+        id: selected?._id,
+      });
+      // Refetching the get api
+      refetch();
+      toast.success(result?.data?.message);
+      setSelected(null);
+      setTimeout(() => {
+        setOpenAction(false);
+      }, 500);
+    } catch (error) {
+      console.log(error);
+      toast.error(error.data.message || error.error);
+    }
+  };
 
   // Delete function to delete a user
-  const deleteHandler = () => {};
+  const deleteHandler = async () => {
+    try {
+      const result = await deleteUser(selected);
+      refetch();
+      toast.success(result?.data?.message);
+      setSelected(null);
+      setTimeout(() => {
+        setOpenDialog(false);
+      }, 500);
+    } catch (error) {
+      console.log(error);
+      toast.error(error.data.message || error.error);
+    }
+  };
 
   // Function to set the id to delete
   const deleteClick = (id) => {
@@ -35,6 +77,12 @@ const Users = () => {
   const editClick = (el) => {
     setSelected(el);
     setOpen(true);
+  };
+
+  // Function to click the user status
+  const userStatusClick = (el) => {
+    setSelected(el);
+    setOpenAction(true);
   };
 
   // Table header
@@ -53,24 +101,28 @@ const Users = () => {
   // Table row
   const TableRow = ({ user }) => (
     <tr className="border-b border-gray-200 text-gray-600 hover:bg-gray-400/10">
+      {/* User Name With Initials */}
       <td className="p-2">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full text-white flex items-center justify-center text-sm bg-blue-700">
             <span className="text-xs md:text-sm text-center">
-              {getInitials(user.name)}
+              {getInitials(user?.name)}
             </span>
           </div>
           {user.name}
         </div>
       </td>
 
-      <td className="p-2">{user.title}</td>
-      <td className="p-2">{user.email || "user.emal.com"}</td>
-      <td className="p-2">{user.role}</td>
+      {/* User title */}
+      <td className="p-2">{user?.title}</td>
+      {/* User Email */}
+      <td className="p-2">{user?.email || "user.emal.com"}</td>
+      {/* User Role */}
+      <td className="p-2">{user?.role}</td>
 
       <td>
         <button
-          // onClick={() => userStatusClick(user)}
+          onClick={() => userStatusClick(user)}
           className={clsx(
             "w-fit px-4 py-1 rounded-full",
             user?.isActive ? "bg-blue-200" : "bg-yellow-100"
@@ -104,7 +156,10 @@ const Users = () => {
     <>
       <div className="w-full md:px-1 px-0 mb-6">
         <div className="flex items-center justify-between mb-8">
+          {/* Title of the page */}
           <Title title="Team Members" />
+
+          {/* Add New user button */}
           <Button
             label="Add New User"
             icon={<IoMdAdd className="text-lg" />}
@@ -113,12 +168,13 @@ const Users = () => {
           />
         </div>
 
+        {/* Rendering the Users table here */}
         <div className="bg-white px-2 md:px-4 py-4 shadow-md rounded">
           <div className="overflow-x-auto">
             <table className="w-full mb-5">
               <TableHeader />
               <tbody>
-                {summary.users?.map((user, index) => (
+                {data?.map((user, index) => (
                   <TableRow key={index} user={user} />
                 ))}
               </tbody>

@@ -14,6 +14,8 @@ import { getInitials } from "../utils";
 import { useLogoutMutation } from "../redux/slices/api/authApiSlice";
 import { toast } from "react-toastify";
 import { logout } from "../redux/slices/authSlice";
+import AddUser from "./AddUser";
+import ChangePassword from "./ChangePassword";
 
 const UserAvatar = () => {
   const [open, setOpen] = useState(false); // State to set the menu bar open
@@ -107,6 +109,12 @@ const UserAvatar = () => {
           </Transition>
         </Menu>
       </div>
+
+      {/* Rendering the Add User dialog here */}
+      <AddUser open={open} setOpen={setOpen} userData={user?.data?.data} />
+
+      {/* Rendering the Change Password Component here */}
+      <ChangePassword open={openPassword} setOpen={setOpenPassword} />
     </>
   );
 };

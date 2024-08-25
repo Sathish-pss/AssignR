@@ -266,6 +266,7 @@ export const changeUserPassword = async (req, res) => {
   // Since it is a protected route, always getting the user id
   try {
     const { userId } = req.user;
+    console.log(userId);
 
     // Finding the user by id
     const user = await User.findById(userId);
