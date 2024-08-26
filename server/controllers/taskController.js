@@ -237,3 +237,180 @@ export const dashboardStatistics = async (req, res) => {
     return res.status(400).json({ status: false, message: error.message });
   }
 };
+
+/**
+ * @returns Controller function to return all the tasks
+ */
+export const getTasks = async (req, res) => {
+  try {
+    const { stage, isTrashed } = req.query;
+
+    let query = { isTrashed: isTrashed ? true : false };
+    if (stage) {
+      query.stage = stage;
+    }
+
+    // Finding the tasks by query params
+    let queryResult = Task.find(query)
+      .populate({
+        path: "team",
+        select: "name title email",
+      })
+      .sort({ _id: -1 });
+
+    const tasks = await queryResult;
+
+    // Returning the response json for all tasks
+    res.status(200).json({
+      status: true,
+      tasks,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
+
+/**
+ * @returns Controller function to return the specific task by id
+ */
+export const getTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Finding the task by id and also the activities
+    const task = await Task.findById(id)
+      .populate({
+        path: "team",
+        select: "name title role email",
+      })
+      .populate({
+        path: "activities.by",
+        select: "name",
+      })
+      .sort({ _id: -1 });
+
+    // Returning the task
+    res.status(200).json({
+      status: true,
+      task,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
+
+/**
+ * @returns Controller function to create subtasks for the tasks with id
+ */
+export const createSubTask = async (req, res) => {
+  try {
+    const { title, tag, date } = req.body;
+    const { id } = req.params;
+
+    const newSubTask = {
+      title,
+      date,
+      tag,
+    };
+
+    // Finding the task by id and pushing the Subtasks to tasks
+    const task = await Task.findById(id);
+    task.subTasks.push(newSubTask);
+
+    await task.save();
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
+
+/**
+ * @returns Controller function to update task based on id
+ */
+export const updateTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, date, team, stage, priority, assets } = req.body;
+    const task = await Task.findById(id);
+    // Updating the tasks
+    task.title = title;
+    task.date = date;
+    task.priority = priority.toLowerCase();
+    task.assets = assets;
+    task.stage = stage.toLowerCase();
+    task.team = team;
+
+    await task.save();
+
+    // Returning the response
+    res.status(200).json({
+      status: true,
+      message: "Task updated successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
+
+/**
+ * @returns Controller function to trash tasks to true
+ */
+export const trashTask = async (req, res) => {
+  try {
+    // Finding the task by id
+    const { id } = req.params;
+    const task = await Task.findById(id);
+
+    // Setting the value to true - trashed task
+    task.isTrashed = true;
+
+    await task.save();
+
+    // Returning the response
+    res.status(200).json({
+      status: true,
+      message: "Task trashed successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
+
+/**
+ * @returns Controller function to Delete, restore tasks based on condition
+ */
+export const deleteRestoreTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { actionType } = req.query;
+
+    // Checking the condition and performing actions based on that
+    if (actionType === "delete") {
+      await Task.findByIdAndDelete(id);
+    } else if (actionType === "deleteAll") {
+      await Task.deleteMany({ isTrashed: true });
+    } else if (actionType === "restore") {
+      const resp = await Task.findById(id);
+      resp.isTrashed = false;
+      resp.save();
+    } else if (actionType === "restoreAll") {
+      await Task.updateMany(
+        { isTrashed: true },
+        { $set: { isTrashed: false } }
+      );
+    }
+
+    // Returning the response
+    res.status(200).json({
+      status: true,
+      message: "Operation performed successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
