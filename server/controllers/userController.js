@@ -153,7 +153,7 @@ export const getNotificationsList = async (req, res) => {
     const { userId } = req.user;
 
     // Finding the notifications for the particualar user
-    const notice = await Notice.findOne({
+    const notice = await Notice.find({
       team: userId,
       // If my id is in, then i will not see it
       isRead: { $nin: userId },

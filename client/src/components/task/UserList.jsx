@@ -7,19 +7,18 @@ import {
   ListboxOption,
 } from "@headlessui/react";
 import { BsChevronExpand } from "react-icons/bs";
-import { summary } from "../../assets/data";
 import clsx from "clsx";
-import { getInitials } from "../../utils";
 import { MdCheck } from "react-icons/md";
+import { useGetTeamListQuery } from "../../redux/slices/api/userApiSlice";
 
 /**
  *
- * @param } param0
+ * @param param0
  * @returns Functional Component returns the User lists
  */
-const UserList = ({ setTeam, team }) => {
-  const data = summary.users;
-  const [selectedUsers, setSelectedUsers] = useState([]);
+const UserList = ({ team, setTeam }) => {
+  const { data: teamData, refetch } = useGetTeamListQuery();
+  const [selectedUsers, setSelectedUsers] = useState([]); // State to select the users
 
   // Function to handle change the element
   const handleChange = (el) => {
@@ -27,14 +26,16 @@ const UserList = ({ setTeam, team }) => {
     setTeam(el?.map((u) => u._id));
   };
 
-  // Useeffect hook to set the users
+  // useEffect hook to set the users
   useEffect(() => {
-    if (team?.length < 1) {
-      data && setSelectedUsers([data[0]]);
+    if (team && team.length > 0) {
+      setSelectedUsers(
+        teamData?.filter((user) => team.includes(user._id)) || []
+      );
     } else {
-      setSelectedUsers(team);
+      setSelectedUsers([]);
     }
-  }, []);
+  }, [team, teamData]);
 
   return (
     <div>
@@ -65,13 +66,13 @@ const UserList = ({ setTeam, team }) => {
             leaveTo="opacity-0"
           >
             <ListboxOptions className="z-50 absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
-              {data?.map((user, index) => (
+              {teamData?.map((user, index) => (
                 <ListboxOption
-                  key={index}
+                  key={user?._id}
                   className={({ active }) =>
-                    `relative cursor-default select-none py-2 pl-10 pr-4. ${
+                    `relative cursor-default select-none py-2 pl-10 pr-4 ${
                       active ? "bg-amber-100 text-amber-900" : "text-gray-900"
-                    } `
+                    }`
                   }
                   value={user}
                 >
@@ -85,10 +86,10 @@ const UserList = ({ setTeam, team }) => {
                       >
                         <div className="w-6 h-6 rounded-full text-white flex items-center justify-center bg-violet-600">
                           <span className="text-center text-[10px]">
-                            {getInitials(user.name)}
+                            {user?.name?.slice(0, 1)}
                           </span>
                         </div>
-                        <span>{user.name}</span>
+                        <span>{user?.name}</span>
                       </div>
                       {selected ? (
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-amber-600">

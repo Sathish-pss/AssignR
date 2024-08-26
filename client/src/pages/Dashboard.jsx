@@ -162,10 +162,11 @@ const UserTable = ({ users }) => {
  * @returns Functional component returns the Dashboard component
  */
 const Dashboard = () => {
-  const totals = summary.tasks;
-
   // Destructuring the data from the redux task API
   const { data, isLoading, error } = useGetDashboardStatsQuery();
+  console.log("Logged dashboard Data", data);
+  // Declaring the total tasks here
+  const totals = data?.tasks;
 
   // Show a loader if data is rendering
   if (isLoading)
@@ -177,11 +178,14 @@ const Dashboard = () => {
 
   console.log("Dashboard data", data);
 
+  /**
+   * Stats containing the card data
+   */
   const stats = [
     {
       _id: "1",
       label: "TOTAL TASK",
-      total: summary?.totalTasks || 0,
+      total: data?.totalTasks || 0,
       icon: <FaNewspaper />,
       bg: "bg-[#1d4ed8]",
     },
@@ -241,17 +245,17 @@ const Dashboard = () => {
         <h4 className="text-xl text-gray-600 font-semibold">
           Chart by Priority
         </h4>
-        <Chart />
+        <Chart data={data?.graphData} />
       </div>
 
       <div className="w-full flex flex-col md:flex-row gap-4 2xl:gap-10 py-8">
         {/* /left */}
 
-        <TaskTable tasks={summary.last10Task} />
+        <TaskTable tasks={data?.last10Task} />
 
         {/* /right */}
 
-        <UserTable users={summary.users} />
+        <UserTable users={data?.users} />
       </div>
     </div>
   );

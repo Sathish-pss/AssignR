@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ModalWrapper from "../ModalWrapper";
 import { Dialog, DialogTitle } from "@headlessui/react";
 import Textbox from "../Textbox";
@@ -7,11 +7,27 @@ import UserList from "./UserList";
 import SelectList from "../SelectList";
 import { BiImages } from "react-icons/bi";
 import Button from "../Button";
+import { dateFormatter } from "../../utils";
+import { toast } from "react-toastify";
+import {
+  useCreateTaskMutation,
+  useUpdateTaskMutation,
+} from "../../redux/slices/api/taskApiSlice";
+// Importing the functions from firebase to store the assets
+import {
+  getStorage,
+  ref,
+  getDownloadURL,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { app } from "../../utils/firebase";
+import { useGetTeamListQuery } from "../../redux/slices/api/userApiSlice";
 
 // Declaring the constants
 const LISTS = ["TODO", "IN PROGRESS", "COMPLETED"];
 const PRIORIRY = ["HIGH", "MEDIUM", "NORMAL", "LOW"];
 
+// Array contains the uploaded file urls
 const uploadedFileURLs = [];
 
 /**
@@ -19,29 +35,123 @@ const uploadedFileURLs = [];
  * @param {*} param0
  * @returns Functional component to open the Add Task dialog
  */
-const AddTask = ({ open, setOpen }) => {
-  const task = "";
-
+const AddTask = ({ open, setOpen, task }) => {
+  const { data: teamListData, refetch } = useGetTeamListQuery();
+  // Decalring the default values for the task form
+  const defaultValues = {
+    title: task?.title || "",
+    date: dateFormatter(task?.date || new Date()),
+    team: [],
+    stage: "",
+    priority: "",
+    assets: [],
+  };
   // Destructuring the use hook from props
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
-  const [team, setTeam] = useState(task?.team || []);
-  const [stage, setStage] = useState(task?.stage?.toUpperCase() || LISTS[0]);
+  } = useForm({ defaultValues });
+  const [team, setTeam] = useState(teamListData); // State to set the team data
+  const [stage, setStage] = useState(task?.stage?.toUpperCase() || LISTS[0]); // State to set the stage
   const [priority, setPriority] = useState(
     task?.priority?.toUpperCase() || PRIORIRY[2]
-  );
+  ); // State to set the priority
   const [assets, setAssets] = useState([]);
   const [uploading, setUploading] = useState(false);
 
-  // Submit handler for Add task
-  const submitHandler = () => {};
+  // UseEffect to fetch the team data
+  useEffect(() => {
+    refetch();
+  }, [team]);
+
+  // Destructuring the task api functions from the redux task slices
+  const [createTask, { isLoading }] = useCreateTaskMutation();
+  const [updateTask, { isLoading: isUpdating }] = useUpdateTaskMutation();
+
+  // If the task object contains the assets , pushing to the array
+  const URLs = task?.assets ? [...task.assets] : [];
+
+  // Submit handler for Creating the task and Updating the task in a single function
+  const submitHandler = async (data) => {
+    // For uploading the file in the Firebase storage bucket
+    for (const file of assets) {
+      setUploading(true);
+      try {
+        await uploadFile(file);
+      } catch (error) {
+        console.error("Error uploading file:", error?.message);
+        return;
+      } finally {
+        setUploading(false);
+      }
+    }
+
+    // Method to create task and upload task
+    try {
+      const newData = {
+        ...data,
+        assets: [...URLs, ...uploadedFileURLs],
+        team,
+        stage,
+        priority,
+      };
+      // If the task id is present, update it else create it
+      const res = task?._id
+        ? await updateTask({
+            ...newData,
+            _id: task?._id,
+          }).unwrap()
+        : await createTask(newData).unwrap();
+
+      // Toatify the message
+      toast.success(res?.message);
+
+      setTimeout(() => {
+        setOpen(false);
+      }, 500);
+    } catch (error) {
+      console.log(error);
+      toast.error(err?.data?.message || err.error);
+    }
+  };
 
   // Function to upload the task imagses
   const handleSelect = (e) => {
     setAssets(e.target.files);
+  };
+
+  /**
+   * Function to store the assets in the firebase storage bucket
+   */
+  const uploadFile = async (file) => {
+    const storage = getStorage(app);
+    const name = new Date().getTime() + file.name;
+    const storageRef = ref(storage, name);
+
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    return new Promise((resolve, reject) => {
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          console.log("Uploading");
+        },
+        (error) => {
+          reject(error);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref)
+            .then((downloadURL) => {
+              uploadedFileURLs.push(downloadURL);
+              resolve();
+            })
+            .catch((error) => {
+              reject(error);
+            });
+        }
+      );
+    });
   };
 
   return (

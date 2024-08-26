@@ -1,29 +1,37 @@
 import { useForm } from "react-hook-form";
 import ModalWrapper from "../ModalWrapper";
 import { Dialog, DialogTitle } from "@headlessui/react";
+import { toast } from "react-toastify";
 import Textbox from "../Textbox";
 import Button from "../Button";
+import { useCreateSubTaskMutation } from "../../redux/slices/api/taskApiSlice";
 
 const AddSubTask = ({ open, setOpen, id }) => {
+  // Destructuring the Hook form props here
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
-  // const [addSbTask] = useCreateSubTaskMutation();
+  // Destructuring the sub task create mutation from the redux
+  const [addSbTask] = useCreateSubTaskMutation();
 
+  /**
+   *
+   * @param {*} data to create a subtask for the main task with task id
+   */
   const handleOnSubmit = async (data) => {
-    // try {
-    //   const res = await addSbTask({ data, id }).unwrap();
-    //   toast.success(res.message);
-    //   setTimeout(() => {
-    //     setOpen(false);
-    //   }, 500);
-    // } catch (err) {
-    //   console.log(err);
-    //   toast.error(err?.data?.message || err.error);
-    // }
+    try {
+      const res = await addSbTask({ data, id }).unwrap();
+      toast.success(res.message);
+      setTimeout(() => {
+        setOpen(false);
+      }, 500);
+    } catch (err) {
+      console.log(err);
+      toast.error(err?.data?.message || err.error);
+    }
   };
 
   return (

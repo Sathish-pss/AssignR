@@ -83,10 +83,10 @@ const Tasks = () => {
 
         {/* Toggle between Board view and table view */}
         {selected !== 1 ? (
-          <BoardView tasks={tasks} />
+          <BoardView tasks={data?.tasks} />
         ) : (
           <div className="w-full">
-            <Table tasks={tasks} />
+            <Table tasks={data?.tasks} />
           </div>
         )}
       </Tabs>

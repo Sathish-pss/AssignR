@@ -48,7 +48,7 @@ const TaskCard = ({ task }) => {
           </div>
 
           {/* Rendering the Task dialog for the Admin role only */}
-          {user?.isAdmin && <TaskDialog task={task} />}
+          {user?.data?.data?.isAdmin && <TaskDialog task={task} />}
         </div>
 
         <>
@@ -124,7 +124,7 @@ const TaskCard = ({ task }) => {
         <div className="w-full pb-2">
           <button
             onClick={() => setOpen(true)}
-            disabled={user.isAdmin ? false : true}
+            disabled={user?.data?.data?.isAdmin ? false : true}
             className="w-full flex gap-4 items-center text-sm text-gray-500 font-semibold disabled:cursor-not-allowed disabled::text-gray-300"
           >
             <IoMdAdd className="text-lg" />
@@ -134,7 +134,7 @@ const TaskCard = ({ task }) => {
       </div>
 
       {/* Rendering the Add Subtask dialog here */}
-      <AddSubTask open={open} setOpen={setOpen} id={task._id} />
+      <AddSubTask open={open} setOpen={setOpen} id={task?._id} />
     </>
   );
 };

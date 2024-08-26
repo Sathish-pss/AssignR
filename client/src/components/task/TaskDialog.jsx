@@ -15,20 +15,71 @@ import {
 import AddTask from "./AddTask";
 import AddSubTask from "./AddSubTask";
 import ConfirmatioDialog from "../Dialogs";
+// Importing the API Mutations from the Redux API Task slices
+import {
+  useTrashTaskMutation,
+  useDuplicateTaskMutation,
+} from "../../redux/slices/api/taskApiSlice";
+import { toast } from "react-toastify";
 
 const TaskDialog = ({ task }) => {
   const [open, setOpen] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
 
+  // Assigning the navigate hook to a variable
   const navigate = useNavigate();
 
-  const duplicateHandler = () => {};
-  const deleteClicks = () => {};
-  const deleteHandler = () => {};
+  // Destructuring the Mutation for the update and Duplicate api calls
+  const [deleteTask] = useTrashTaskMutation();
+  const [duplicateTask] = useDuplicateTaskMutation();
 
   /**
-   * Items
+   * @returns Function to duplicate tasks
+   */
+  const duplicateHandler = async () => {
+    try {
+      const res = await duplicateTask(task?._id).unwrap();
+      toast.success(res?.message);
+      setTimeout(() => {
+        setOpenDialog(false);
+        window.location.reload();
+      }, 500);
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.data?.message || error?.error);
+    }
+  };
+
+  /**
+   * Function to open the delete dialog open
+   */
+  const deleteClicks = () => {
+    setOpenDialog(true);
+  };
+
+  /**
+   * Function to perform delete handler
+   */
+  const deleteHandler = async () => {
+    try {
+      const res = await deleteTask({
+        id: task?._id,
+        isTrashed: "trash",
+      }).unwrap();
+
+      toast.success(res?.message);
+      setTimeout(() => {
+        setOpenDialog(false);
+        window.location.reload();
+      }, 500);
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.data?.message || error?.error);
+    }
+  };
+  /**
+   * Items to perform actions like setting edit,delete and all
    */
   const items = [
     {
@@ -49,7 +100,7 @@ const TaskDialog = ({ task }) => {
     {
       label: "Duplicate",
       icon: <HiDuplicate className="mr-2 h-5 w-5" aria-hidden="true" />,
-      onClick: () => duplicateHanlder(),
+      onClick: () => duplicateHandler(),
     },
   ];
 
@@ -73,38 +124,30 @@ const TaskDialog = ({ task }) => {
             <MenuItems className="absolute p-4 right-0 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none">
               <div className="px-1 py-1 space-y-2">
                 {items.map((el) => (
-                  <MenuItem key={el.label}>
-                    {({ active }) => (
-                      <button
-                        onClick={el?.onClick}
-                        className={`${
-                          active ? "bg-blue-500 text-white" : "text-gray-900"
-                        } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
-                      >
-                        {el.icon}
-                        {el.label}
-                      </button>
-                    )}
+                  <MenuItem
+                    as="button"
+                    onClick={el?.onClick}
+                    className={`text-gray-900 group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                  >
+                    {el.icon}
+                    {el.label}
                   </MenuItem>
                 ))}
               </div>
 
+              {/* Menu Item to open the dialog Box */}
               <div className="px-1 py-1">
                 <MenuItem>
-                  {({ active }) => (
-                    <button
-                      onClick={() => deleteClicks()}
-                      className={`${
-                        active ? "bg-blue-500 text-white" : "text-red-900"
-                      } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
-                    >
-                      <RiDeleteBin6Line
-                        className="mr-2 h-5 w-5 text-red-400"
-                        aria-hidden="true"
-                      />
-                      Delete
-                    </button>
-                  )}
+                  <button
+                    onClick={() => deleteClicks()}
+                    className={` text-red-900 group flex w-full items-center rounded-md px-2 py-2 text-sm`}
+                  >
+                    <RiDeleteBin6Line
+                      className="mr-2 h-5 w-5 text-red-400"
+                      aria-hidden="true"
+                    />
+                    Delete
+                  </button>
                 </MenuItem>
               </div>
             </MenuItems>

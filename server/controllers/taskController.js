@@ -317,9 +317,13 @@ export const createSubTask = async (req, res) => {
 
     // Finding the task by id and pushing the Subtasks to tasks
     const task = await Task.findById(id);
-    task.subTasks.push(newSubTask);
+    task?.subTasks?.push(newSubTask);
 
     await task.save();
+    res.status(200).json({
+      status: true,
+      message: "SubTask added successfully",
+    });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
